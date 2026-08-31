@@ -94,9 +94,41 @@ test('Q1-3 首页：含数字 createdAt 的多条记录/文献不报错且正常
   await AppW.DB.clear('materials');
 });
 
-// ================= Q2：八字换一批（后续阶段补充） =================
+// ================= Q2：八字换一批 =================
 
-test('Q2-placeholder 待八字换一批实现后启用', async () => {
-  // 占位，避免空文件报错；Q2 测试在对应问题解决时追加
-  assert.ok(true);
+test('Q2-1 八字最终结果有换一批按钮且可重新生成、不重复写历史', async () => {
+  const { w, AppW } = await setup();
+  const main = w.document.getElementById('main');
+  await AppW.Pages.bazi.render(main, {});
+
+  // 走完整流程：排盘 → 下一步 → Step3
+  w.document.getElementById('bzSurname').value = '李';
+  w.document.getElementById('bzDate').value = '2024-03-15';
+  w.document.getElementById('bzHour').value = '10:30';
+  w.document.getElementById('bzCalc').click();
+  await new Promise((r) => setTimeout(r, 60));
+  const nextBtn = main.querySelector('#bzNext3');
+  assert.ok(nextBtn, '应有进入推荐的按钮');
+  nextBtn.click();
+  await new Promise((r) => setTimeout(r, 40));
+
+  // Step3 应有换一批按钮和名字卡片
+  const reshuffleBtn = main.querySelector('#bzReshuffle');
+  assert.ok(reshuffleBtn, '八字最终结果应有换一批按钮');
+  assert.ok(main.querySelectorAll('#bzStep3 .name-card').length > 0, '应有名字卡片');
+
+  // 记录当前历史条数（首次生成已写 1 条）
+  const recsBefore = (await AppW.DB.getAll('records')).filter(r => r.module === 'bazi').length;
+  assert.ok(recsBefore >= 1, '首次生成应写历史');
+
+  // 点换一批：仍能渲染
+  reshuffleBtn.click();
+  await new Promise((r) => setTimeout(r, 40));
+  assert.ok(main.querySelectorAll('#bzStep3 .name-card').length > 0, '换一批后仍应有名字卡片');
+
+  // 换一批不重复写历史
+  const recsAfter = (await AppW.DB.getAll('records')).filter(r => r.module === 'bazi').length;
+  assert.strictEqual(recsAfter, recsBefore, '换一批不应重复写历史');
+
+  await AppW.DB.clear('records');
 });

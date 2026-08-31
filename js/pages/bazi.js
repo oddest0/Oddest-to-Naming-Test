@@ -138,24 +138,35 @@
         }
       }
 
-      function renderStep3() {
-        const box = document.getElementById('bzStep3');
+      function buildRecommendList() {
         const surname = document.getElementById('bzSurname').value.trim();
         const gender = document.getElementById('bzGender').value;
-        const list = App.Engine.bazi.recommend({ surname: surname, baziResult: baziResult, gender: gender, count: 10 });
+        return App.Engine.bazi.recommend({ surname: surname, baziResult: baziResult, gender: gender, count: 10 });
+      }
+
+      function renderStep3(saveHistory) {
+        const box = document.getElementById('bzStep3');
+        const surname = document.getElementById('bzSurname').value.trim();
+        const list = buildRecommendList();
         if (list.length === 0) {
           box.innerHTML = '<div class="empty-state">暂无可推荐的名字</div>';
           return;
         }
-        // 保存历史
-        App.DB.add('records', {
-          id: App.uuid('rec'), module: 'bazi',
-          title: (surname || '?') + '宝宝 · 八字取名',
-          input: { baziResult: baziResult },
-          result: { names: list.slice(0, 10).map(function (n) { return n.fullName; }) },
-          createdAt: App.now()
-        }).catch(function () {});
+        // 保存历史（换一批不重复写历史，saveHistory === false 时跳过）
+        if (saveHistory !== false) {
+          App.DB.add('records', {
+            id: App.uuid('rec'), module: 'bazi',
+            title: (surname || '?') + '宝宝 · 八字取名',
+            input: { baziResult: baziResult },
+            result: { names: list.slice(0, 10).map(function (n) { return n.fullName; }) },
+            createdAt: App.now()
+          }).catch(function () {});
+        }
         let h = '<div class="card"><div class="card-title">五行补益推荐（补益：' + baziResult.favor.join('、') + '）</div>';
+        h += '<div class="toolbar" style="margin-top:0;margin-bottom:12px;">';
+        h += '<button id="bzReshuffle" class="btn" type="button">换一批</button>';
+        h += '<span style="font-size:12px;color:var(--text-secondary);">基于同一八字重新组合补益五行的名字</span>';
+        h += '</div>';
         h += '<div class="name-grid">';
         list.forEach(function (n) {
           h += '<div class="name-card">';
@@ -168,6 +179,15 @@
         });
         h += '</div></div>';
         box.innerHTML = h;
+
+        // 换一批：重新生成并展示，不重复写历史
+        const reshuffleBtn = box.querySelector('#bzReshuffle');
+        if (reshuffleBtn) {
+          reshuffleBtn.addEventListener('click', function () {
+            renderStep3(false);
+            App.App.toast('已换一批');
+          });
+        }
 
         // 收藏
         box.querySelectorAll('.fav-btn').forEach(function (btn) {
