@@ -230,7 +230,15 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
   #hmGo, #hmGenMaterial { flex: 0 0 auto; }
   .module-card { padding: 12px; }
   .module-icon { font-size: 22px; }
-  .app-sidebar .nav-item { font-size: 13px; padding: 7px 10px; }}
+  .app-sidebar .nav-item { font-size: 13px; padding: 7px 10px; }
+
+  /* 顶栏在手机上收紧，避免按钮被挤出屏幕；隐藏"本地数据"状态徽章腾出空间 */
+  .app-topbar { padding: 0 8px; height: 50px; }
+  .topbar-left { gap: 6px; }
+  .topbar-right { gap: 4px; }
+  .app-logo { font-size: 16px; padding: 3px 8px; }
+  .topbar-btn { font-size: 11px; padding: 4px 6px; }
+  .data-status { display: none; }}
 
 /* ---------- 首页工作台 ---------- */
 .welcome { padding: 22px 24px; border-radius: var(--radius); background: linear-gradient(135deg, var(--accent-soft), rgba(255,255,255,0.6)); margin-bottom: 16px; }

@@ -67,14 +67,18 @@ test('S0-5 页面标题与顶栏文案已更新', () => {
   assert.ok(!INDEX.includes('专属取名工作台'), '不应残留旧副标题');
 });
 
-test('S0-6 移动端媒体查询包含首页去拥挤优化规则', () => {
+test('S0-6 移动端媒体查询包含首页与顶栏去拥挤优化规则', () => {
   const css = readProject('css/style.css');
-  // 移动端工具栏控件自适应撑满（覆盖内联固定宽度）
+  // 首页工具栏控件自适应撑满（覆盖内联固定宽度）
   assert.ok(css.includes('#hmSurname, #hmType, #hmSurname2'), '应包含首页工具栏控件移动端适配规则');
   assert.ok(css.includes('width: auto !important'), '应覆盖内联固定宽度');
   // 欢迎区 / 统计 chip / 模块卡 / 导航收紧
   for (const t of ['手机端首页去拥挤优化', '.welcome { padding: 16px;', '.stat-chip { font-size: 12px;', '.module-card { padding: 12px;', '.app-sidebar .nav-item { font-size: 13px;']) {
     assert.ok(css.includes(t), `移动端优化应包含 ${t}`);
+  }
+  // 顶栏在手机上收紧，避免"设置"等按钮被挤出屏幕
+  for (const t of ['顶栏在手机上收紧', '.app-topbar { padding: 0 8px; height: 50px; }', '.topbar-btn { font-size: 11px; padding: 4px 6px; }', '.data-status { display: none; }']) {
+    assert.ok(css.includes(t), `移动端顶栏优化应包含 ${t}`);
   }
   // 括号应平衡（防 CSS 结构被破坏）
   let depth = 0;
