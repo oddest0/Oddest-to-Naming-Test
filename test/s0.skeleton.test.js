@@ -59,7 +59,7 @@ test('S0-4 样式表包含设计令牌与关键组件', () => {
 test('S0-5 页面标题与顶栏文案已更新', () => {
   // 浏览器标签标题
   assert.ok(INDEX.includes('<title>奇思妙取 · 该工作台由Oddest娱乐制作，生成内容仅供参考</title>'), '浏览器标题应为新标题');
-  // 顶栏 logo
+  // 顶栏 logo（桌面端显示全名）
   assert.ok(INDEX.includes('<div class="app-logo">奇思妙取</div>'), '顶栏 logo 应为奇思妙取');
   // 顶栏副标题（免责声明）
   assert.ok(INDEX.includes('该工作台由Oddest娱乐制作，生成内容仅供参考'), '副标题应含免责声明');
@@ -80,6 +80,9 @@ test('S0-6 移动端媒体查询包含首页与顶栏去拥挤优化规则', () 
   for (const t of ['顶栏在手机上收紧', '.app-topbar { padding: 0 8px; height: 50px; }', '.topbar-btn { font-size: 11px; padding: 4px 6px; }', '.data-status { display: none; }']) {
     assert.ok(css.includes(t), `移动端顶栏优化应包含 ${t}`);
   }
+  // 手机端 logo 精简为"取"字（伪元素实现，桌面端不受影响）
+  assert.ok(css.includes('.app-logo::after') && css.includes('content: "取"'), '手机端 logo 应以伪元素显示"取"字');
+  assert.ok(css.includes('.app-logo { font-size: 0;'), '手机端应隐藏 logo 原始文字');
   // 括号应平衡（防 CSS 结构被破坏）
   let depth = 0;
   for (const ch of css) { if (ch === '{') depth++; if (ch === '}') depth--; }
