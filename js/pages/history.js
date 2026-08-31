@@ -29,7 +29,7 @@
         container.innerHTML = '<div class="empty-state">读取历史失败</div>';
         return;
       }
-      records.sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+      records = App.sortNewestFirst(records);
       const drawerTitle = document.getElementById('drawerTitle');
       if (drawerTitle) drawerTitle.textContent = '历史记录（' + records.length + '）';
 

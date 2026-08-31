@@ -287,7 +287,7 @@
     if (!box) return;
     let mats = [];
     try { mats = await App.DB.getAll('materials'); } catch (e) { /* ignore */ }
-    mats.sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+    mats = App.sortNewestFirst(mats);
     if (mats.length === 0) {
       box.innerHTML = '';
       return;
@@ -316,7 +316,7 @@
     if (!box) return;
     let recs = [];
     try { recs = await App.DB.getAll('records'); } catch (e) { /* ignore */ }
-    recs.sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+    recs = App.sortNewestFirst(recs);
     if (recs.length === 0) {
       box.innerHTML = '<div class="card"><div class="card-title">🕘 最近记录</div><div class="empty-state">还没有生成记录，试试上面的快速取名</div></div>';
       return;

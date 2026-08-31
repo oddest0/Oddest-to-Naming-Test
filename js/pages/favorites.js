@@ -19,8 +19,8 @@
         container.innerHTML = '<div class="empty-state">读取收藏失败</div>';
         return;
       }
-      // 按时间倒序
-      favs.sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+      // 按时间倒序（兼容数字/字符串 createdAt）
+      favs = App.sortNewestFirst(favs);
       const drawerTitle = document.getElementById('drawerTitle');
       if (drawerTitle) drawerTitle.textContent = '收藏夹（' + favs.length + '）';
 

@@ -307,6 +307,27 @@
 
   App.now = function () { return Date.now(); };
 
+  /**
+   * 把 createdAt 统一转为可比较的时间戳（数字毫秒）
+   * 兼容：数字时间戳 / ISO 字符串 / null / undefined / 无法解析的值
+   */
+  App.timeOf = function (v) {
+    if (v == null) return 0;
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string') {
+      const n = Date.parse(v);
+      return isNaN(n) ? 0 : n;
+    }
+    return 0;
+  };
+
+  /** 按 createdAt 倒序（最新在前）排序数组，元素缺 createdAt 视为最早 */
+  App.sortNewestFirst = function (arr) {
+    return arr.slice().sort(function (a, b) {
+      return App.timeOf(b.createdAt) - App.timeOf(a.createdAt);
+    });
+  };
+
   App.formatTime = function (ts) {
     if (!ts) return '';
     const d = new Date(ts);
