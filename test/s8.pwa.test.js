@@ -4,6 +4,7 @@
  * 2. sw.js 预缓存列表覆盖 index.html 的全部资源引用
  * 3. index.html 已接入 manifest 与 SW 注册
  * 4. 图标文件存在且为有效 PNG
+ * 5. sw.js 具备缓存自动更新机制（避免线上更新后手机仍旧版）
  */
 'use strict';
 
@@ -18,6 +19,7 @@ const MANIFEST = JSON.parse(readProject('manifest.json'));
 const SW = readProject('sw.js');
 
 function extractScriptRefs(html) {
+  // 提取 <script src="..."> 中的脚本路径（m[1]）
   const re = /<script src="([^"]+)"><\/script>/g;
   const refs = [];
   let m;
@@ -70,4 +72,14 @@ test('S8-4 图标文件存在且为有效 PNG', () => {
     assert.strictEqual(buf[2], 0x4E);
     assert.strictEqual(buf[3], 0x47);
   }
+});
+
+test('S8-5 sw.js 具备缓存自动更新机制（避免更新后仍旧版）', () => {
+  // 缓存版本号已升级，浏览器会据此更新 SW 并触发旧缓存清理
+  assert.ok(SW.includes('qsmq-v0.1.1'), '缓存版本号应升级到 v0.1.1');
+  // 导航请求应回源获取最新 HTML（network-first），而非直接返回缓存
+  assert.ok(SW.includes("req.mode === 'navigate'"), '应识别导航请求');
+  assert.ok(SW.includes('stale-while-revalidate'), '静态资源应采用 stale-while-revalidate 后台更新');
+  // activate 时应清理旧版本缓存
+  assert.ok(SW.includes('caches.delete(k)'), '应清理旧版本缓存');
 });

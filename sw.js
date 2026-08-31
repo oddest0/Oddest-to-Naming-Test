@@ -1,9 +1,12 @@
 /**
  * sw.js —— Service Worker（PWA 离线缓存）
- * 预缓存应用外壳（HTML/CSS/JS/数据/图标），cache-first，导航请求离线回退到 index.html。
+ * 预缓存应用外壳（HTML/CSS/JS/数据/图标），并保证资源更新能自动生效：
+ * - 导航请求：network-first（在线时总是回源拿最新 HTML，离线回退缓存）
+ * - 静态资源：stale-while-revalidate（先返回缓存保证速度，同时后台回源更新缓存）
+ * - 升级缓存版本号 CACHE 会触发 SW 更新并在 activate 时清理旧版本缓存
  * 子路径部署（GitHub Pages /Oddest-to-Naming-Test/）下使用相对路径，保证可移植。
  */
-const CACHE = 'qsmq-v0.1.0';
+const CACHE = 'qsmq-v0.1.1';
 const ASSETS = [
   './',
   './index.html',
@@ -54,22 +57,34 @@ self.addEventListener('fetch', function (e) {
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  e.respondWith(
-    caches.match(req).then(function (hit) {
-      if (hit) return hit;
-      return fetch(req).then(function (res) {
+  // 导航请求：network-first，在线回源拿最新 HTML，离线回退应用外壳缓存
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req).then(function (res) {
         if (res && res.status === 200) {
           var copy = res.clone();
           caches.open(CACHE).then(function (c) { c.put(req, copy); });
         }
         return res;
-      });
-    }).catch(function () {
-      // 离线且未命中缓存：导航请求回退到应用外壳
-      if (req.mode === 'navigate') {
+      }).catch(function () {
         return caches.match(new URL('./index.html', self.location.href));
-      }
-      return Response.error();
+      })
+    );
+    return;
+  }
+
+  // 静态资源：stale-while-revalidate（先返回缓存，同时后台回源更新缓存）
+  e.respondWith(
+    caches.match(req).then(function (hit) {
+      var network = fetch(req).then(function (res) {
+        if (res && res.status === 200) {
+          var copy = res.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        }
+        return res;
+      }).catch(function () { return null; });
+      if (hit) return hit;
+      return network.then(function (nres) { return nres || Response.error(); });
     })
   );
 });
