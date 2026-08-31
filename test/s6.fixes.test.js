@@ -132,3 +132,43 @@ test('Q2-1 八字最终结果有换一批按钮且可重新生成、不重复写
 
   await AppW.DB.clear('records');
 });
+
+// ================= Q3：诗词结果右侧常驻栏 =================
+
+test('Q3-1 诗词页面：结果为右侧 sticky 栏，选句后结果出现在右侧', async () => {
+  const { w, AppW } = await setup();
+  const main = w.document.getElementById('main');
+  await AppW.Pages.poetry.render(main, {});
+
+  // 布局结构：存在两栏容器，且结果面板位于 .poetry-side 内（在左侧列表之后）
+  const layout = main.querySelector('.poetry-layout');
+  assert.ok(layout, '应有两栏布局容器');
+  const side = main.querySelector('.poetry-side');
+  assert.ok(side, '应有右侧结果栏');
+  const resultBox = side.querySelector('#poResult');
+  assert.ok(resultBox, '结果容器应在右侧栏内');
+  // 右侧栏在文档顺序上位于左侧列表之后
+  const mainCol = main.querySelector('.poetry-main');
+  const mainIdx = Array.prototype.indexOf.call(layout.children, mainCol);
+  const sideIdx = Array.prototype.indexOf.call(layout.children, side);
+  assert.ok(mainIdx >= 0 && sideIdx > mainIdx, '右侧栏应位于左侧列表之后');
+
+  // CSS 文件包含 sticky 常驻规则
+  const css = fs.readFileSync(path.join(ROOT, 'css', 'style.css'), 'utf8');
+  assert.ok(css.includes('.poetry-side'), 'CSS 应含右侧栏样式');
+  assert.ok(css.includes('position: sticky'), 'CSS 应含 sticky 常驻定位');
+
+  // 检索并选句 → 结果应出现在右侧 #poResult 内
+  w.document.getElementById('poSurname').value = '李';
+  const searchInput = w.document.getElementById('poSearch');
+  searchInput.value = '云帆';
+  searchInput.dispatchEvent(new w.Event('input'));
+  await new Promise((r) => setTimeout(r, 20));
+  const item = main.querySelector('.poem-item');
+  assert.ok(item, '应有诗句条目');
+  item.click();
+  await new Promise((r) => setTimeout(r, 40));
+  assert.ok(resultBox.querySelectorAll('.name-card').length > 0, '右侧栏应显示提炼的名字');
+
+  await AppW.DB.clear('records');
+});

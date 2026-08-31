@@ -23,7 +23,7 @@
 
       let html = '<div class="card">';
       html += '<div class="card-title">诗词取名</div>';
-      html += '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">从诗词名句中提炼好字好词取名，每个名字都带出处原文。</div>';
+      html += '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">从诗词名句中提炼好字好词取名，每个名字都带出处原文。选句后，提炼的名字会显示在右侧栏，下滑页面时始终可见。</div>';
       html += '<div class="field"><label>姓氏（可选）</label><input id="poSurname" type="text" value="' + (prefs.surname || '') + '" placeholder="如：李"></div>';
       html += '<div class="toolbar" style="margin-top:10px;">';
       html += '<input id="poSearch" type="text" placeholder="输入字/词检索诗句" style="flex:1;min-width:160px;padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-sm);">';
@@ -35,8 +35,16 @@
       html += '</div>';
       html += '</div>';
 
-      html += '<div id="poPoems" class="card" style="margin-top:16px;"></div>';
-      html += '<div id="poResult"></div>';
+      // 两栏布局：左侧诗词列表（可滚动），右侧结果面板（sticky 常驻可视区）
+      html += '<div class="poetry-layout">';
+      html += '<div class="poetry-main">';
+      html += '<div id="poPoems" class="card"></div>';
+      html += '</div>';
+      html += '<aside class="poetry-side">';
+      html += '<div class="card"><div class="card-title">🎯 提炼的名字</div>';
+      html += '<div id="poResult"><div class="empty-state">在左侧点选一句诗，名字会显示在这里</div></div>';
+      html += '</div></aside>';
+      html += '</div>';
 
       container.innerHTML = html;
 
@@ -71,8 +79,7 @@
           box.innerHTML = '<div class="empty-state">该句没有可提炼的字，试试其他句</div>';
           return;
         }
-        let h = '<div class="card" style="margin-top:16px;">';
-        h += '<div class="card-title">『' + poem.line + '』 提炼的名字</div>';
+        let h = '<div class="card-title">『' + poem.line + '』 提炼的名字</div>';
         h += '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">' + poem.book + ' · ' + poem.title + ' · ' + poem.meaning + '</div>';
         h += '<div class="name-grid">';
         names.forEach(function (n) {
@@ -85,7 +92,7 @@
           h += '<div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">「' + n.poem.line + '」</div>';
           h += '</div>';
         });
-        h += '</div></div>';
+        h += '</div>';
         box.innerHTML = h;
 
         // 收藏
