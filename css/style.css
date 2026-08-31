@@ -218,7 +218,19 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
   .name-grid { grid-template-columns: 1fr; }
   .app-subtitle { display: none; }
   .app-logo { font-size: 18px; }
-}
+
+  /* ---- 手机端首页去拥挤优化 ---- */
+  .app-main { padding: 12px; }
+  .welcome { padding: 16px; margin-bottom: 12px; }
+  .welcome-title { font-size: 19px; }
+  .stat-row { gap: 8px; margin-top: 12px; }
+  .stat-chip { font-size: 12px; padding: 5px 10px; }
+  .toolbar { gap: 8px; }
+  #hmSurname, #hmType, #hmSurname2 { flex: 1 1 auto; min-width: 0; width: auto !important; }
+  #hmGo, #hmGenMaterial { flex: 0 0 auto; }
+  .module-card { padding: 12px; }
+  .module-icon { font-size: 22px; }
+  .app-sidebar .nav-item { font-size: 13px; padding: 7px 10px; }}
 
 /* ---------- 首页工作台 ---------- */
 .welcome { padding: 22px 24px; border-radius: var(--radius); background: linear-gradient(135deg, var(--accent-soft), rgba(255,255,255,0.6)); margin-bottom: 16px; }
