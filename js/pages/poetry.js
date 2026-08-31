@@ -73,14 +73,16 @@
 
       function selectPoem(poem) {
         const surname = document.getElementById('poSurname').value.trim();
-        const names = App.Engine.poetry.generate({ line: poem.line, poem: poem, surname: surname, count: 8 });
+        const names = App.Engine.poetry.generate({ line: poem.line, full: poem.full, poem: poem, surname: surname, count: 8 });
         const box = document.getElementById('poResult');
         if (names.length === 0) {
           box.innerHTML = '<div class="empty-state">该句没有可提炼的字，试试其他句</div>';
           return;
         }
+        // 是否使用了全篇提取（名句字不足时回退到全篇，保证必有结果）
+        const fromFull = names.some(function (n) { return n.poem.fromFull; });
         let h = '<div class="card-title">『' + poem.line + '』 提炼的名字</div>';
-        h += '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">' + poem.book + ' · ' + poem.title + ' · ' + poem.meaning + '</div>';
+        h += '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">' + poem.book + ' · ' + poem.title + ' · ' + poem.meaning + (fromFull ? '<span style="color:var(--accent-dark);"> · 已从全篇提取</span>' : '') + '</div>';
         h += '<div class="name-grid">';
         names.forEach(function (n) {
           h += '<div class="name-card">';
