@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>取名 · 专属取名工作台</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- 顶栏 -->
+    <header class="app-topbar">
+      <div class="topbar-left">
+        <div class="app-logo">取名</div>
+        <span class="app-subtitle">专属取名工作台</span>
+      </div>
+      <div class="topbar-right">
+        <span id="dataStatus" class="data-status" title="数据保存在本机浏览器，刷新/重启不丢失">● 本地数据</span>
+        <button id="btnExport" class="topbar-btn" type="button">导出备份</button>
+        <button id="btnImport" class="topbar-btn" type="button">导入恢复</button>
+        <button id="btnSettings" class="topbar-btn" type="button">设置</button>
+        <input id="importFile" type="file" accept=".json" style="display:none">
+      </div>
+    </header>
+
+    <div class="app-body">
+      <!-- 左侧导航 -->
+      <nav class="app-sidebar" id="sidebar">
+        <button class="nav-item" data-page="home" type="button">首页</button>
+        <button class="nav-item" data-page="newborn" type="button">新生儿取名</button>
+        <button class="nav-item" data-page="bazi" type="button">生辰八字取名</button>
+        <button class="nav-item" data-page="poetry" type="button">诗词取名</button>
+        <button class="nav-item" data-page="pet" type="button">宠物取名</button>
+        <button class="nav-item" data-page="score" type="button">名字解析评分</button>
+        <div class="sidebar-divider"></div>
+        <button class="nav-item nav-item-secondary" id="btnFavorites" type="button">★ 收藏夹</button>
+        <button class="nav-item nav-item-secondary" id="btnHistory" type="button">历史记录</button>
+      </nav>
+
+      <!-- 主内容区 -->
+      <main class="app-main" id="main"></main>
+    </div>
+  </div>
+
+  <!-- Toast 容器 -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- 全局抽屉（收藏夹 / 历史记录） -->
+  <div id="globalDrawer" class="drawer-mask">
+    <div class="drawer">
+      <div class="drawer-header">
+        <span id="drawerTitle" class="drawer-title"></span>
+        <button class="drawer-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="drawer-body"></div>
+    </div>
+  </div>
+
+  <!-- 脚本加载顺序（file:// 协议下禁用 ES Module，统一普通 script） -->
+  <script src="js/utils.js"></script>
+  <script src="js/data/hanzi.js"></script>
+  <script src="js/data/names.js"></script>
+  <script src="js/data/poetry.js"></script>
+  <script src="js/data/pet.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/engine/generator.js"></script>
+  <script src="js/engine/bazi.js"></script>
+  <script src="js/engine/poetry.js"></script>
+  <script src="js/engine/score.js"></script>
+  <script src="js/pages/home.js"></script>
+  <script src="js/pages/newborn.js"></script>
+  <script src="js/pages/bazi.js"></script>
+  <script src="js/pages/poetry.js"></script>
+  <script src="js/pages/pet.js"></script>
+  <script src="js/pages/score.js"></script>
+  <script src="js/pages/favorites.js"></script>
+  <script src="js/pages/history.js"></script>
+  <script src="js/pages/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

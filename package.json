@@ -1,0 +1,13 @@
+{
+  "name": "naming-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "取名 App - 本地单页应用（新生儿/生辰八字/诗词/宠物/名字解析评分）",
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^29.1.1"
+  }
+}
