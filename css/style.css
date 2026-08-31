@@ -216,6 +216,8 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
   .sidebar-divider { display: none; }
   .app-main { padding: 14px; }
   .name-grid { grid-template-columns: 1fr; }
+  .app-subtitle { display: none; }
+  .app-logo { font-size: 18px; }
 }
 
 /* ---------- 首页工作台 ---------- */

@@ -55,3 +55,14 @@ test('S0-4 样式表包含设计令牌与关键组件', () => {
     assert.ok(css.includes(t), `style.css 应包含 ${t}`);
   }
 });
+
+test('S0-5 页面标题与顶栏文案已更新', () => {
+  // 浏览器标签标题
+  assert.ok(INDEX.includes('<title>奇思妙取 · 该工作台由Oddest娱乐制作，生成内容仅供参考</title>'), '浏览器标题应为新标题');
+  // 顶栏 logo
+  assert.ok(INDEX.includes('<div class="app-logo">奇思妙取</div>'), '顶栏 logo 应为奇思妙取');
+  // 顶栏副标题（免责声明）
+  assert.ok(INDEX.includes('该工作台由Oddest娱乐制作，生成内容仅供参考'), '副标题应含免责声明');
+  // 旧标题不应残留
+  assert.ok(!INDEX.includes('专属取名工作台'), '不应残留旧副标题');
+});
