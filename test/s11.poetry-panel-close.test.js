@@ -99,10 +99,29 @@ test('S11-5 关闭后面板选句时自动恢复弹出结果', async () => {
 
 test('S11-6 面板头部（含关闭按钮）固定，内容下滑时关闭按钮始终可见', () => {
   const css = readProject('css/style.css');
-  const idx = css.lastIndexOf('.poetry-side-head');
-  const block = css.slice(idx, css.indexOf('}', idx) + 1);
-  assert.match(block, /position\s*:\s*sticky/, '头部应为 sticky 固定');
+  // 匹配包含 sticky 的 .poetry-side-head 规则块（全局固定规则）
+  const m = css.match(/\.poetry-side-head\s*\{[^}]*position\s*:\s*sticky[^}]*\}/);
+  assert.ok(m, '头部应为 sticky 固定');
+  const block = m[0];
   assert.match(block, /top\s*:\s*0/, '头部应固定于面板顶部');
   assert.match(block, /background\s*:\s*var\(--card-color\)/, '头部应有不透明背景（滚动时不透出内容）');
   assert.match(block, /z-index\s*:\s*2/, '头部应有 z-index 层级');
+});
+
+test('S11-7 手机端面板顶部无缝隙：头部背景从面板顶边覆盖，滚动不漏字', () => {
+  const css = readProject('css/style.css');
+  // 提取 900px 媒体查询块
+  const start = css.indexOf('@media (max-width: 900px)');
+  let depth = 0, end = -1;
+  const open = css.indexOf('{', start);
+  for (let i = open; i < css.length; i++) {
+    if (css[i] === '{') depth++;
+    else if (css[i] === '}') {
+      depth--;
+      if (depth === 0) { end = i; break; }
+    }
+  }
+  const mq = css.slice(start, end + 1);
+  assert.ok(mq.includes('padding: 0 14px 14px'), '手机端面板应去掉顶部 padding（避免 sticky 头部上方缝隙）');
+  assert.ok(/\.poetry-side-head\s*\{[^}]*padding-top\s*:\s*10px/.test(mq), '手机端头部应补 padding-top 使背景覆盖到面板顶边');
 });

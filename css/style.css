@@ -314,9 +314,10 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
     border-top: 1px solid var(--border-color);
     border-radius: 14px 14px 0 0;
     box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
-    padding: 10px 14px 14px;
+    padding: 0 14px 14px;
   }
   .poetry-side .card { background: transparent; border: none; border-radius: 0; box-shadow: none; padding: 0; }
+  .poetry-side-head { padding-top: 10px; }
   .poetry-side .card-title { margin-bottom: 8px; }
 }
 
