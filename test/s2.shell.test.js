@@ -171,3 +171,22 @@ test('S2-9 抽屉：关闭按钮工作', async () => {
   closeBtn.click();
   assert.ok(!drawer.classList.contains('open'), '关闭后不应再是 open');
 });
+
+test('S2-10 历史记录：单条删除', async () => {
+  await App.DB.add('records', { id: 'rec_del1', module: 'newborn', title: '李·新生儿取名', input: {}, result: { names: [{ fullName: '李宇轩' }] }, createdAt: 1000 });
+  await App.DB.add('records', { id: 'rec_del2', module: 'pet', title: '猫·宠物取名', input: {}, result: { names: [{ fullName: '团团' }] }, createdAt: 2000 });
+  await App.App.openHistory();
+  const body = window.document.querySelector('#globalDrawer .drawer-body');
+  assert.ok(body.innerHTML.includes('李宇轩') && body.innerHTML.includes('团团'), '应显示两条记录');
+  const delBtns = body.querySelectorAll('.history-del-btn');
+  assert.strictEqual(delBtns.length, 2, '每条记录应有删除按钮');
+  // sortNewestFirst 后 rec_del2(2000) 在前，点击第一条的删除按钮 → 删掉 rec_del2
+  delBtns[0].click();
+  await new Promise((r) => setTimeout(r, 40));
+  const recs = await App.DB.getAll('records');
+  assert.strictEqual(recs.length, 1, '删除后应剩一条');
+  assert.ok(recs.some(r => r.id === 'rec_del1'), '应保留 rec_del1');
+  assert.ok(!recs.some(r => r.id === 'rec_del2'), '应删除 rec_del2');
+  // 清理
+  await App.DB.clear('records');
+});

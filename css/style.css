@@ -295,3 +295,11 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
   .poetry-layout { flex-direction: column; }
   .poetry-side { width: 100%; position: static; max-height: none; overflow: visible; }
 }
+
+/* 历史记录单条删除按钮 */
+.history-del-btn {
+  font-size: 11px; color: var(--text-secondary); background: transparent;
+  border: 1px solid var(--border-color); border-radius: var(--radius-sm);
+  padding: 2px 8px; cursor: pointer; white-space: nowrap;
+}
+.history-del-btn:hover { color: #cf1322; border-color: #cf1322; background: rgba(207,19,34,0.06); }

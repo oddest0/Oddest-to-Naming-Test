@@ -1,6 +1,6 @@
 /**
  * pages/history.js —— 历史记录（全局抽屉内展示）
- * 所有模块的操作记录，支持按模块筛选、清空。
+ * 所有模块的操作记录，支持按模块筛选、清空、单条删除。
  */
 (function (global) {
   'use strict';
@@ -106,9 +106,18 @@
       item.innerHTML =
         '<div style="display:flex;justify-content:space-between;align-items:center;">' +
         '<span class="badge">' + label + '</span>' +
-        '<span style="font-size:12px;color:var(--text-secondary);">' + App.formatTime(rec.createdAt) + '</span></div>' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<span style="font-size:12px;color:var(--text-secondary);">' + App.formatTime(rec.createdAt) + '</span>' +
+        '<button type="button" class="history-del-btn" title="删除这条记录">删除</button>' +
+        '</div></div>' +
         '<div style="font-size:14px;font-weight:600;margin-top:6px;">' + (rec.title || '') + '</div>' +
         namesHtml;
+      // 单条删除：删除后重新渲染（更新计数与列表）
+      item.querySelector('.history-del-btn').addEventListener('click', async function () {
+        await App.DB.delete('records', rec.id);
+        App.App.toast('已删除该记录');
+        await App.Pages.history.render(listEl.parentNode);
+      });
       listEl.appendChild(item);
     });
   }
