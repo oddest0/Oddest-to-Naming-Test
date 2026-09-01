@@ -32,6 +32,9 @@
         if (k) prefs.surname = k.value;
       } catch (e) { /* ignore */ }
 
+      // Dashboard 两栏布局容器：左栏(主)=欢迎区+快速AI取名+最近记录；右栏(侧)=上传文献+功能模块
+      let html = '<div class="home-dash"><div class="home-col home-col-main">';
+
       // 统计数据
       let stats = { favs: 0, recs: 0, mats: 0 };
       try {
@@ -42,8 +45,6 @@
         ]);
         stats = { favs: favs.length, recs: recs.length, mats: mats.length };
       } catch (e) { /* ignore */ }
-
-      let html = '';
 
       // 欢迎区
       html += '<div class="welcome">';
@@ -57,12 +58,12 @@
       html += '</div>';
 
       // ① 快速 AI 取名
-      html += '<div class="card">';
+      html += '<div class="card quick-card">';
       html += '<div class="card-title">⚡ 快速 AI 取名</div>';
-      html += '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">基于内置取名数据库一键生成，无需切换模块。</div>';
+      html += '<div class="quick-sub" style="font-size:13px;margin-bottom:12px;">基于内置取名数据库一键生成，无需切换模块。</div>';
       html += '<div class="toolbar">';
-      html += '<input id="hmSurname" type="text" value="' + (prefs.surname || '') + '" placeholder="姓氏（如：李）" style="width:110px;padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-sm);">';
-      html += '<select id="hmType" style="padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-sm);">';
+      html += '<input id="hmSurname" type="text" value="' + (prefs.surname || '') + '" placeholder="姓氏（如：李）" style="width:110px;padding:8px 12px;border-radius:var(--radius-sm);">';
+      html += '<select id="hmType" style="padding:8px 12px;border-radius:var(--radius-sm);">';
       QUICK_TYPES.forEach(function (t) {
         html += '<option value="' + t.key + '">' + t.label + '取名</option>';
       });
@@ -72,12 +73,17 @@
       html += '<div id="hmResult" style="margin-top:14px;"></div>';
       html += '</div>';
 
+      // ④ 最近记录（置于左栏）
+      html += '<div id="hmRecent" style="margin-top:16px;"></div>';
+
+      html += '</div><div class="home-col home-col-side">';
+
       // ② 上传自定义文献取名
       html += '<div class="card">';
       html += '<div class="card-title">📄 上传自定义文献取名</div>';
       html += '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">上传自己的 .txt 文本（诗词、家训、文章等），自动提炼好字取名并保存，可反复使用。</div>';
       html += '<div class="toolbar">';
-      html += '<input id="hmSurname2" type="text" value="' + (prefs.surname || '') + '" placeholder="姓氏（可选）" style="width:110px;padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-sm);">';
+      html += '<input id="hmSurname2" type="text" value="' + (prefs.surname || '') + '" placeholder="姓氏（可选）" style="width:110px;padding:8px 12px;border-radius:var(--radius-sm);">';
       html += '<label class="btn" for="hmFile" style="cursor:pointer;">选择 .txt 文件</label>';
       html += '<input id="hmFile" type="file" accept=".txt,text/plain" style="display:none;">';
       html += '<button id="hmGenMaterial" class="btn btn-primary" type="button">用此文献取名</button>';
@@ -100,9 +106,7 @@
       });
       html += '</div>';
       html += '</div>';
-
-      // ④ 最近记录
-      html += '<div id="hmRecent" style="margin-top:16px;"></div>';
+      html += '</div></div>';
 
       container.innerHTML = html;
       bindEvents(container);

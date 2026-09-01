@@ -327,3 +327,70 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
   padding: 2px 8px; cursor: pointer; white-space: nowrap;
 }
 .history-del-btn:hover { color: #cf1322; border-color: #cf1322; background: rgba(207,19,34,0.06); }
+
+/* ============================================================
+   首页 Dashboard 两栏布局（贴近参考图 CBANK 仪表盘风格）
+   仅视觉/布局调整，不影响任何功能
+   ============================================================ */
+.home-dash {
+  display: grid;
+  grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.home-col { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+
+/* 欢迎区 → Dashboard 大标题卡（渐变层次 + 装饰圆） */
+.welcome { position: relative; overflow: hidden; }
+.welcome::before {
+  content: ""; position: absolute; width: 170px; height: 170px; border-radius: 50%;
+  background: rgba(124,107,242,0.10); top: -64px; right: -44px; pointer-events: none;
+}
+.welcome-title, .welcome-sub, .stat-row { position: relative; }
+
+/* 快速AI取名 → 银行卡风格渐变主卡 */
+.quick-card {
+  background: linear-gradient(135deg, #8B7BF7, #6A5BE0 58%, var(--accent-2));
+  border: none; color: #fff;
+  box-shadow: 0 14px 34px rgba(124,107,242,0.32);
+  position: relative; overflow: hidden;
+}
+.quick-card .card-title { color: #fff; font-size: 18px; }
+.quick-card .quick-sub { color: rgba(255,255,255,0.85); }
+.quick-card::before {
+  content: ""; position: absolute; width: 210px; height: 210px; border-radius: 50%;
+  background: rgba(255,255,255,0.10); top: -80px; right: -66px; pointer-events: none;
+}
+.quick-card::after {
+  content: ""; position: absolute; width: 130px; height: 130px; border-radius: 50%;
+  background: rgba(255,255,255,0.08); bottom: -50px; left: -36px; pointer-events: none;
+}
+.quick-card input, .quick-card select {
+  border: 1px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.16); color: #fff;
+  box-shadow: none;
+}
+.quick-card input::placeholder { color: rgba(255,255,255,0.72); }
+.quick-card select option { color: #23262F; }
+.quick-card .btn-primary { background: #fff; color: #5B4BC4; box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+.quick-card #hmResult { position: relative; z-index: 1; }
+
+/* 功能模块 → 服务图标网格（参考图 Services 图标组） */
+.module-grid { grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); }
+.module-card {
+  position: relative;
+  background: linear-gradient(180deg, #FFFFFF, #FAF9FE);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.module-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 13px;
+  background: var(--accent-soft); color: var(--accent-dark); font-size: 22px;
+}
+.module-title { margin-top: 10px; font-size: 15px; }
+.module-go { font-size: 12px; color: var(--accent-dark); margin-top: 8px; font-weight: 600; }
+
+/* 移动端：Dashboard 两栏合并为单列 */
+@media (max-width: 900px) {
+  .home-dash { grid-template-columns: 1fr; }
+  .home-col { gap: 14px; }
+}
