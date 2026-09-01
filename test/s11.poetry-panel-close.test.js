@@ -96,3 +96,13 @@ test('S11-5 关闭后面板选句时自动恢复弹出结果', async () => {
   const pr = main.querySelector('#poResult');
   assert.ok(pr && pr.textContent.length > 5, '应展示提炼结果');
 });
+
+test('S11-6 面板头部（含关闭按钮）固定，内容下滑时关闭按钮始终可见', () => {
+  const css = readProject('css/style.css');
+  const idx = css.lastIndexOf('.poetry-side-head');
+  const block = css.slice(idx, css.indexOf('}', idx) + 1);
+  assert.match(block, /position\s*:\s*sticky/, '头部应为 sticky 固定');
+  assert.match(block, /top\s*:\s*0/, '头部应固定于面板顶部');
+  assert.match(block, /background\s*:\s*var\(--card-color\)/, '头部应有不透明背景（滚动时不透出内容）');
+  assert.match(block, /z-index\s*:\s*2/, '头部应有 z-index 层级');
+});

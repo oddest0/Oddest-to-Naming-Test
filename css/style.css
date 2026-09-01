@@ -420,3 +420,12 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
 @media (max-width: 900px) {
   .poetry-restore { bottom: 12px; font-size: 13px; padding: 9px 18px; }
 }
+
+/* 面板头部（含关闭按钮）固定：内容下滑时关闭按钮始终可见 */
+.poetry-side-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--card-color);
+  padding-bottom: 8px;
+}
