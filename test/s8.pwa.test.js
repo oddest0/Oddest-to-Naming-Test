@@ -76,7 +76,7 @@ test('S8-4 图标文件存在且为有效 PNG', () => {
 
 test('S8-5 sw.js 具备缓存自动更新机制（避免更新后仍旧版）', () => {
   // 缓存版本号已升级，浏览器会据此更新 SW 并触发旧缓存清理
-  assert.ok(SW.includes('qsmq-v0.1.1'), '缓存版本号应升级到 v0.1.1');
+  assert.match(SW, /qsmq-v\d+\.\d+\.\d+/, '应有版本化缓存名（随发布升级，避免仍旧版）');
   // 导航请求应回源获取最新 HTML（network-first），而非直接返回缓存
   assert.ok(SW.includes("req.mode === 'navigate'"), '应识别导航请求');
   assert.ok(SW.includes('stale-while-revalidate'), '静态资源应采用 stale-while-revalidate 后台更新');
