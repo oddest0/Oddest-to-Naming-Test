@@ -6,7 +6,7 @@
  * - 升级缓存版本号 CACHE 会触发 SW 更新并在 activate 时清理旧版本缓存
  * 子路径部署（GitHub Pages /Oddest-to-Naming-Test/）下使用相对路径，保证可移植。
  */
-const CACHE = 'qsmq-v0.1.6';
+const CACHE = 'qsmq-v0.1.7';
 const ASSETS = [
   './',
   './index.html',

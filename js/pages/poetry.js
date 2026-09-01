@@ -75,6 +75,8 @@
       }
 
       function selectPoem(poem) {
+        // 用户需求：选择任意一句诗时，若结果面板处于关闭状态则自动恢复显示（弹出结果）
+        if (typeof setPanelHidden === 'function') setPanelHidden(false);
         const surname = document.getElementById('poSurname').value.trim();
         const names = App.Engine.poetry.generate({ line: poem.line, full: poem.full, poem: poem, surname: surname, count: 8 });
         const box = document.getElementById('poResult');

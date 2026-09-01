@@ -80,3 +80,19 @@ test('S11-4 CSS 含面板隐藏/恢复按钮/头部布局规则', () => {
   assert.ok(css.includes('.poetry-side-head'), '应有 .poetry-side-head 头部布局');
   assert.ok(css.includes('.poetry-panel-close'), '应有 .poetry-panel-close 关闭按钮样式');
 });
+
+test('S11-5 关闭后面板选句时自动恢复弹出结果', async () => {
+  const { main, w } = await setup();
+  // 关闭面板
+  w.document.getElementById('poPanelClose').click();
+  assert.ok(main.querySelector('.poetry-side').classList.contains('panel-hidden'), '前置：面板应已隐藏');
+  // 选择任意一句诗
+  const items = main.querySelectorAll('.poem-item');
+  assert.ok(items.length > 0, '应有名句列表');
+  items[0].click();
+  assert.ok(!main.querySelector('.poetry-side').classList.contains('panel-hidden'), '选句后面板应自动恢复显示');
+  assert.ok(!main.querySelector('.poetry-main').classList.contains('panel-hidden'), '列表应释放空间恢复');
+  assert.strictEqual(main.querySelector('#poRestore').style.display, 'none', '恢复按钮应隐藏');
+  const pr = main.querySelector('#poResult');
+  assert.ok(pr && pr.textContent.length > 5, '应展示提炼结果');
+});
