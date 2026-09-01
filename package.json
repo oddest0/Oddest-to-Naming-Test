@@ -1,6 +1,6 @@
 {
   "name": "naming-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "取名 App - 本地单页应用（新生儿/生辰八字/诗词/宠物/名字解析评分）",
   "scripts": {
