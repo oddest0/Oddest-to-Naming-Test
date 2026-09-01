@@ -3,10 +3,11 @@
  * 从名句/全篇提炼好字、组合候选名；支持按全篇内容检索与提取。
  *
  * 提炼策略（v0.1.2 优化）：
- * 传统做法是从诗句中拆出单个字后随机组合，导致"名字与诗句关联不大"。
- * 现在改为「相邻二字对」提炼：扫描诗句中紧邻的两个字（如"明月""清泉""松间"），
- * 保留原文的词组意象与上下文（ctx），再按意象相关度 + 字库覆盖评分排序。
- * 优先从名句提炼，名句不足时补充全篇正文，保证名字都能直接指回原句。
+ * 名字的"字"一律来自所选诗句（名句优先、全篇补充），组合方式有两种：
+ * 1. 相邻二字对（如"明月""清泉""松间"）——保留原句词组意象，天然贴切；
+ * 2. 字池随机组合（名句/全篇中可入名的字两两组合）——更灵活。
+ * 两类候选统一按「意象相关度 + 音律（平仄、声调）+ 寓意 + 字库覆盖」评分排序，
+ * 保证组合不违和、朗朗上口、有寓意，且名字都能直接指回原诗。
  */
 (function (global) {
   'use strict';
@@ -18,15 +19,55 @@
   // 虚词/不适合入名的字（仅纯虚词，不误伤"云""新"等好取名字）
   const STOP_CHARS = new Set(['之', '乎', '者', '也', '矣', '兮', '与', '于', '其', '何', '乃', '且', '而', '或', '亦', '以', '为', '所', '在', '有', '无', '是', '不', '未', '此', '彼', '夫', '如', '若', '我', '吾', '尔', '子', '天', '下', '上', '中', '一', '二', '三', '千', '万', '的', '了', '吗', '呢', '既', '余', '焉', '哉', '莫', '岂', '虽', '苟', '於', '已', '自', '各', '同', '共', '可', '非']);
 
-  // 相邻二字对使用的宽松虚词集：只有两字都是纯虚词时才跳过该对，
+  // 相邻二字对使用的虚词集：任一字为纯虚词即跳过该对，
   // 避免误伤"天生""明月""春潮"这类含实词的好词组。
   const STOP_PAIR = new Set(['之', '乎', '者', '也', '矣', '兮', '哉', '欤', '焉', '耳', '与', '于', '其', '何', '乃', '且', '而', '或', '亦', '以', '为', '所', '在', '有', '无', '是', '此', '彼', '夫', '如', '若', '我', '吾', '尔', '既', '余', '莫', '岂', '虽', '苟', '自', '各', '共', '可', '非', '但', '等', '则', '的', '了', '吗', '呢', '便', '那', '这', '要', '被', '把', '让']);
 
-  // 明显不适合入名的字（在相邻对中作为减分项）
+  // 明显不适合入名的字（作为减分项）
   const BAD_CHARS = new Set(['死', '病', '愁', '恨', '悲', '泪', '孤', '寒', '冷', '枯', '残', '衰', '乱', '急', '苦', '哀', '怨', '泣', '亡', '阴', '暗', '凶', '凄', '惨', '贱', '贫', '朽', '颓', '废', '悔']);
+
+  // 寓意正面词（用于组合寓意加分）
+  const GOOD_WORDS = ['美', '好', '明', '清', '雅', '润', '安', '福', '慧', '智', '德', '贤', '仁', '勇', '光', '华', '瑞', '祥', '嘉', '宁', '静', '舒', '悦', '欣', '文', '乐', '和', '顺', '谦', '诚', '信', '善', '珍', '宝', '锦', '秀', '灵', '妙', '新', '望', '远', '荣', '茂', '盛', '盈', '丰', '芳', '香', '洁', '澄', '澈', '云', '月', '星', '春', '秋', '晨', '晴', '熙', '晖', '曜', '旭', '斌', '卓', '超', '鹏', '鸿', '洋', '海', '天', '龙', '凤', '兰', '松', '竹', '梅'];
 
   function isHanziChar(ch) {
     return /[\u4e00-\u9fff]/.test(ch);
+  }
+
+  /** 平仄判断：1/2 声为平，3/4 声为仄 */
+  function isPing(tone) {
+    return tone === 1 || tone === 2;
+  }
+
+  /**
+   * 音律评分：两字声调不同 +1；平仄交替 +2；同平仄 -2
+   * @param {{tone:number}} infoA
+   * @param {{tone:number}} infoB
+   */
+  POETRY.toneScore = function (infoA, infoB) {
+    if (!infoA || !infoB || !infoA.tone || !infoB.tone) return 0;
+    let s = 0;
+    if (infoA.tone !== infoB.tone) s += 1;
+    if (isPing(infoA.tone) !== isPing(infoB.tone)) s += 2;
+    else s -= 2;
+    return s;
+  };
+
+  /** 字库覆盖分：两字都在库(有寓意且可评估音律) +8；一字在库 +2；都不在库 -4 */
+  function libScore(infoA, infoB) {
+    const n = (infoA ? 1 : 0) + (infoB ? 1 : 0);
+    if (n === 2) return 8;
+    if (n === 1) return 2;
+    return -4;
+  }
+
+  /** 寓意评分：有字义 +1/字；含正面词再 +1 */
+  function meaningScore(infoA, infoB) {
+    let s = 0;
+    if (infoA && infoA.meaning) s += 1;
+    if (infoB && infoB.meaning) s += 1;
+    const text = (infoA ? infoA.meaning : '') + (infoB ? infoB.meaning : '');
+    if (GOOD_WORDS.some(function (w) { return text.indexOf(w) >= 0; })) s += 1;
+    return s;
   }
 
   /** 构造一个相邻二字对的评分 */
@@ -38,13 +79,12 @@
     const boundBefore = i === 0 || /[，。；：！？、\s\n]/.test(before);
     const boundAfter = (i + 2 >= text.length) || /[，。；：！？、\s\n]/.test(after);
     let score = 0;
-    if (inLine) score += 10;           // 意象锚点：来自名句
-    if (boundBefore) score += 3;       // 词组起点（前有标点/句首），天然词组通常以实词开头
-    if (infoA) score += 4; else score += 1; // 字库覆盖（库外字也可能好，给保底分）
-    if (infoB) score += 4; else score += 1;
-    if (infoA && infoB) score += 2;    // 两字都在库，天然词组的强信号
-    if (infoA && infoB && infoA.tone === infoB.tone) score -= 1; // 同声调平淡
-    if (BAD_CHARS.has(a) || BAD_CHARS.has(b)) score -= 4;        // 含劣质字
+    score += (inLine ? 10 : 2);                 // 意象相关度：名句相邻 +10；全篇相邻 +2
+    score += 2;                                 // 相邻保真（词组）
+    score += libScore(infoA, infoB);            // 字库覆盖（决定寓意与音律可评估性）
+    score += POETRY.toneScore(infoA, infoB);    // 音律（平仄/声调）
+    score += meaningScore(infoA, infoB);        // 寓意
+    if (BAD_CHARS.has(a) || BAD_CHARS.has(b)) score -= 6; // 含劣质字
     return {
       name: key,
       c1: a,
@@ -53,8 +93,32 @@
       c2Info: infoB || null,
       inLibCount: (infoA ? 1 : 0) + (infoB ? 1 : 0),
       inLine: inLine === true,
+      adjacent: true,
       score: score,
       ctx: text.slice(Math.max(0, i - 8), i + 10)
+    };
+  }
+
+  /** 构造一个"字池随机组合"候选（非相邻） */
+  function makeCombo(a, b, inLineAny, line, full) {
+    const infoA = App.Data.hanziMap[a];
+    const infoB = App.Data.hanziMap[b];
+    let score = (inLineAny ? 7 : -4);           // 意象相关度：名句字组合 +7；全篇组合 -4（与所选名句脱节惩罚）
+    score += libScore(infoA, infoB);            // 字库覆盖
+    score += POETRY.toneScore(infoA, infoB);    // 音律
+    score += meaningScore(infoA, infoB);        // 寓意
+    if (BAD_CHARS.has(a) || BAD_CHARS.has(b)) score -= 6; // 含劣质字
+    return {
+      name: a + b,
+      c1: a,
+      c2: b,
+      c1Info: infoA || null,
+      c2Info: infoB || null,
+      inLibCount: (infoA ? 1 : 0) + (infoB ? 1 : 0),
+      inLine: inLineAny === true,
+      adjacent: false,
+      score: score,
+      ctx: inLineAny ? (line || '') : String(full || '').slice(0, 18)
     };
   }
 
@@ -62,7 +126,7 @@
    * 从文本提炼"相邻二字对"（保留原句词组意象）
    * @param {string} text 名句或全篇
    * @param {object} opts { inLine } 是否来自名句（用于意象加分）
-   * @returns [{name, c1, c2, c1Info, c2Info, inLibCount, inLine, score, ctx}]
+   * @returns [{name, c1, c2, c1Info, c2Info, inLibCount, inLine, adjacent, score, ctx}]
    */
   POETRY.extractPairs = function (text, opts) {
     opts = opts || {};
@@ -73,7 +137,7 @@
       const a = t[i];
       const b = t[i + 1];
       if (!isHanziChar(a) || !isHanziChar(b)) continue; // 只取相邻两个汉字
-      if (STOP_PAIR.has(a) && STOP_PAIR.has(b)) continue; // 两字均为纯虚词才跳过
+      if (STOP_PAIR.has(a) || STOP_PAIR.has(b)) continue; // 任一字为纯虚词即跳过（避免"河之""其姝"等含虚词的劣质组合）
       const key = a + b;
       if (seen.has(key)) continue; // 去重（同一对保留首次出现位置）
       seen.add(key);
@@ -83,7 +147,7 @@
   };
 
   /**
-   * 从文本提炼可入名字/关键字（单字，供 extractPairs 兜底与展示）
+   * 从文本提炼可入名字/关键字（单字，供字池与兜底）
    * @param {string} text 名句或全篇
    * @param {object} opts { useHanziLib } 是否只取内置库中有寓意的字
    * @returns [{char, meaning, wuxing, strokes, inLib}]
@@ -114,7 +178,7 @@
   };
 
   /**
-   * 用诗句提炼名字（相邻二字对优先，名句→全篇，保证名字能指回原句）
+   * 用诗句提炼名字（相邻二字对 + 字池随机组合，名句优先、全篇补充）
    * @param {object} opts { line, full, poem, surname, count }
    * @returns [{name, fullName, chars, py, meaning, poem:{book,title,line,full,fromFull}, fromLine, ctx, score}]
    */
@@ -125,19 +189,39 @@
     const surname = opts.surname || '';
     const count = opts.count || 8;
 
-    // 1. 名句相邻对（意象最强）
-    const cands = POETRY.extractPairs(line, { inLine: true });
-    const seenPairs = {};
-    cands.forEach(function (c) { seenPairs[c.name] = true; });
-    // 2. 全篇补充（跳过名句已出现的对，保留名句版）
+    // ---- 1. 相邻二字对（名句优先 + 全篇补充）----
+    const adjacent = POETRY.extractPairs(line, { inLine: true });
+    const seen = {};
+    adjacent.forEach(function (c) { seen[c.name] = true; });
     POETRY.extractPairs(full).forEach(function (c) {
-      if (!seenPairs[c.name]) {
-        seenPairs[c.name] = true;
-        cands.push(c);
-      }
+      if (!seen[c.name]) { seen[c.name] = true; adjacent.push(c); }
     });
+
+    // ---- 2. 字池（库内可入名字）：名句字池高优先 ----
+    const lineLib = POETRY.extract(line, { useHanziLib: true }).map(function (e) { return e.char; });
+    const fullLib = POETRY.extract(full, { useHanziLib: true }).map(function (e) { return e.char; });
+
+    // ---- 3. 字池随机组合（非相邻）：名句字池 → 全篇字池 ----
+    const combos = [];
+    function addCombos(pool, inLineAny) {
+      for (let i = 0; i < pool.length; i++) {
+        for (let j = 0; j < pool.length; j++) {
+          if (i === j) continue; // 排除同字组合
+          const key = pool[i] + pool[j];
+          if (seen[key]) continue; // 相邻对已产出 / 组合已存在
+          seen[key] = true;
+          combos.push(makeCombo(pool[i], pool[j], inLineAny, line, full));
+        }
+      }
+    }
+    addCombos(lineLib, true);
+    addCombos(fullLib, false);
+
+    // ---- 4. 合并去重排序 ----
+    const cands = adjacent.concat(combos);
     cands.sort(function (a, b) { return b.score - a.score; });
 
+    // ---- 5. 组装结果 ----
     const results = [];
     const used = new Set();
     for (let i = 0; i < cands.length && results.length < count; i++) {
@@ -167,7 +251,7 @@
       });
     }
 
-    // 3. 极端兜底：全篇几乎没有可取相邻对时，用单字随机组合保证必有结果
+    // ---- 6. 极端兜底：几乎无可入名字时，单字随机组合保证必有结果 ----
     if (results.length < count) {
       const extracted = POETRY.extract(full, { useHanziLib: false });
       if (extracted.length >= 2) {

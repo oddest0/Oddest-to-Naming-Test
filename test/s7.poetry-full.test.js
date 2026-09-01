@@ -103,16 +103,17 @@ test('S7-4 页面级：虚词多的句子也能出名字且无空态提示', asy
   await AppW.DB.clear('records');
 });
 
-test('S7-5 引擎级：全部诗词取出的名字都来自诗句相邻位置', async () => {
+test('S7-5 引擎级：全部诗词取出的名字每个字都来自诗句', async () => {
   const env = await loadApp();
   const A = env.window.App;
-  const strip = (s) => String(s).replace(/[，。；：！？、\s\n]/g, '');
   for (const p of A.Data.poetry) {
     const names = A.Engine.poetry.generate({ line: p.line, full: p.full, poem: p, surname: '李', count: 4 });
     assert.strictEqual(names.length, 4, `《${p.title}》应出 4 个名字`);
-    const canon = strip(p.line) + '|' + strip(p.full);
+    const allChars = (p.line + p.full).split('');
     for (const n of names) {
-      assert.ok(canon.includes(n.name), `《${p.title}》名字"${n.name}"应来自诗句相邻位置`);
+      for (const ch of n.chars) {
+        assert.ok(allChars.includes(ch), `《${p.title}》名字"${n.name}"的字"${ch}"应来自诗句`);
+      }
     }
   }
 });

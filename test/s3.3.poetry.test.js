@@ -130,16 +130,34 @@ test('S3.3-7 extractPairs：提炼相邻二字对（明月/清泉）', () => {
   assert.ok(pairs.every(p => p.name.length === 2 && p.c1 && p.c2), '应为相邻两字');
 });
 
-test('S3.3-8 generate：名字来自诗句相邻位置（强关联）', () => {
+test('S3.3-8 generate：名字的字都来自诗句（相邻或字池组合）', () => {
   const poem = App.Data.poetry.find(x => x.title.indexOf('山居秋暝') >= 0);
   assert.ok(poem, '应找到《山居秋暝》');
-  const list = App.Engine.poetry.generate({ line: poem.line, full: poem.full, poem: poem, surname: '李', count: 6 });
-  assert.strictEqual(list.length, 6, '应出 6 个名字');
-  const strip = (s) => String(s).replace(/[，。；：！？、\s\n]/g, '');
-  const canon = strip(poem.line) + '|' + strip(poem.full);
+  const list = App.Engine.poetry.generate({ line: poem.line, full: poem.full, poem: poem, surname: '李', count: 8 });
+  assert.strictEqual(list.length, 8, '应出 8 个名字');
+  const allChars = (poem.line + poem.full).split('');
   for (const n of list) {
-    assert.ok(canon.includes(n.name), `名字"${n.name}"应是原诗相邻位置的字（强关联）`);
+    for (const ch of n.chars) {
+      assert.ok(allChars.includes(ch), `名字"${n.name}"的每个字都应来自诗句`);
+    }
     assert.ok(n.fromLine === true || n.fromLine === false, '应有 fromLine 标记');
     assert.ok(n.ctx && n.ctx.length > 0, '应有上下文');
+    assert.ok(n.py && n.py.length > 0, '应有拼音');
+  }
+});
+
+test('S3.3-9 音律评分：平仄交替高于同平仄；组合不违和', () => {
+  const ts = App.Engine.poetry.toneScore;
+  assert.ok(typeof ts === 'function', '应暴露音律评分');
+  // 明(2平)照(4仄) 平仄交替 应高于 明(2平)泉(2平) 同平仄
+  const alt = ts({ tone: 2 }, { tone: 4 });
+  const same = ts({ tone: 2 }, { tone: 2 });
+  assert.ok(alt > same, '平仄交替应得分更高');
+  assert.ok(same < 0, '同平仄应扣分');
+  // 组合测试：两字不应相同
+  const poem = App.Data.poetry.find(x => x.title.indexOf('山居秋暝') >= 0);
+  const list = App.Engine.poetry.generate({ line: poem.line, full: poem.full, poem: poem, surname: '李', count: 8 });
+  for (const n of list) {
+    assert.notStrictEqual(n.chars[0], n.chars[1], '两字不应相同');
   }
 });
