@@ -9,3 +9,9 @@ Thumbs.db
 # 编辑器配置
 .vscode/
 .idea/
+
+# 本地验证临时脚本/服务器（不入库）
+_tmp_*.js
+_tmp_*.png
+_edge_profile/
+_dom.html
