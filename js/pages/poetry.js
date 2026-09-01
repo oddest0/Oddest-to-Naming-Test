@@ -91,7 +91,12 @@
           h += '<div class="py">' + n.py + '</div>';
           h += '<div class="meta">五行 ' + (n.wuxing || '—') + '</div>';
           h += '<div class="mean">' + n.meaning + '</div>';
-          h += '<div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">「' + n.poem.line + '」</div>';
+          // 出处：来自名句显示原句；来自全篇显示上下文片段，让名字与诗词的关联一目了然
+          if (n.fromLine) {
+            h += '<div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">「' + n.poem.line + '」</div>';
+          } else {
+            h += '<div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">出自：「…' + (n.ctx || n.poem.full || '') + '…」</div>';
+          }
           h += '</div>';
         });
         h += '</div>';

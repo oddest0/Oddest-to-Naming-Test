@@ -117,3 +117,29 @@ test('S3.3-6 诗词页面：浏览、检索、选句取名', async () => {
   assert.ok(recs.some(r => r.module === 'poetry'), '应保存诗词历史');
   await AppW.DB.clear('records');
 });
+
+test('S3.3-7 extractPairs：提炼相邻二字对（明月/清泉）', () => {
+  const pairs = App.Engine.poetry.extractPairs('明月松间照，清泉石上流', { inLine: true });
+  const names = pairs.map(p => p.name);
+  assert.ok(names.includes('明月'), '应包含"明月"');
+  assert.ok(names.includes('清泉'), '应包含"清泉"');
+  const qq = pairs.find(p => p.name === '清泉');
+  assert.ok(qq.ctx && qq.ctx.includes('清泉'), '应有上下文');
+  assert.strictEqual(qq.inLine, true, '应标记来自名句');
+  assert.ok(pairs.every(p => p.score > 0), '每条应有评分');
+  assert.ok(pairs.every(p => p.name.length === 2 && p.c1 && p.c2), '应为相邻两字');
+});
+
+test('S3.3-8 generate：名字来自诗句相邻位置（强关联）', () => {
+  const poem = App.Data.poetry.find(x => x.title.indexOf('山居秋暝') >= 0);
+  assert.ok(poem, '应找到《山居秋暝》');
+  const list = App.Engine.poetry.generate({ line: poem.line, full: poem.full, poem: poem, surname: '李', count: 6 });
+  assert.strictEqual(list.length, 6, '应出 6 个名字');
+  const strip = (s) => String(s).replace(/[，。；：！？、\s\n]/g, '');
+  const canon = strip(poem.line) + '|' + strip(poem.full);
+  for (const n of list) {
+    assert.ok(canon.includes(n.name), `名字"${n.name}"应是原诗相邻位置的字（强关联）`);
+    assert.ok(n.fromLine === true || n.fromLine === false, '应有 fromLine 标记');
+    assert.ok(n.ctx && n.ctx.length > 0, '应有上下文');
+  }
+});
