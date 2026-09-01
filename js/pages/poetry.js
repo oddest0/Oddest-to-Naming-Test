@@ -41,9 +41,12 @@
       html += '<div id="poPoems" class="card"></div>';
       html += '</div>';
       html += '<aside class="poetry-side">';
-      html += '<div class="card"><div class="card-title">🎯 提炼的名字</div>';
+      html += '<div class="card">';
+      html += '<div class="poetry-side-head"><div class="card-title">🎯 提炼的名字</div><button id="poPanelClose" class="poetry-panel-close" type="button" title="关闭结果面板" aria-label="关闭结果面板">×</button></div>';
       html += '<div id="poResult"><div class="empty-state">在左侧点选一句诗，名字会显示在这里</div></div>';
       html += '</div></aside>';
+      // 关闭面板后的恢复按钮（默认隐藏；点击关闭后出现）
+      html += '<button id="poRestore" class="poetry-restore" type="button" style="display:none;">🎯 显示提炼结果</button>';
       html += '</div>';
 
       container.innerHTML = html;
@@ -136,6 +139,26 @@
           createdAt: App.now()
         }).catch(function () {});
       }
+
+      // 结果面板：默认常驻；点 × 关闭，底部出现「显示提炼结果」恢复按钮
+      const panel = document.querySelector('.poetry-side');
+      const pmain = document.querySelector('.poetry-main');
+      const closeBtn = document.getElementById('poPanelClose');
+      const restoreBtn = document.getElementById('poRestore');
+      function setPanelHidden(hidden) {
+        if (!panel || !pmain) return;
+        if (hidden) {
+          panel.classList.add('panel-hidden');
+          pmain.classList.add('panel-hidden');
+          if (restoreBtn) restoreBtn.style.display = 'inline-flex';
+        } else {
+          panel.classList.remove('panel-hidden');
+          pmain.classList.remove('panel-hidden');
+          if (restoreBtn) restoreBtn.style.display = 'none';
+        }
+      }
+      if (closeBtn) closeBtn.addEventListener('click', function () { setPanelHidden(true); });
+      if (restoreBtn) restoreBtn.addEventListener('click', function () { setPanelHidden(false); });
 
       // 事件绑定
       const searchInput = document.getElementById('poSearch');

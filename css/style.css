@@ -394,3 +394,29 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
   .home-dash { grid-template-columns: 1fr; }
   .home-col { gap: 14px; }
 }
+
+/* ============================================================
+   诗词结果面板：可关闭（默认常驻，点 × 隐藏，底部出现恢复按钮）
+   不影响任何功能与现有布局
+   ============================================================ */
+.poetry-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.poetry-side-head .card-title { margin-bottom: 0; }
+.poetry-panel-close {
+  border: none; background: none; font-size: 22px; line-height: 1; color: var(--text-secondary);
+  cursor: pointer; padding: 0 6px; border-radius: 6px; flex: 0 0 auto;
+}
+.poetry-panel-close:hover { background: var(--accent-soft); color: var(--accent-dark); }
+.poetry-side.panel-hidden { display: none; }
+.poetry-main.panel-hidden { padding-bottom: 0; }
+.poetry-restore {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: 60;
+  border: none; cursor: pointer; white-space: nowrap;
+  background: linear-gradient(135deg, #8B7BF7, var(--accent-dark)); color: #fff;
+  padding: 10px 22px; border-radius: 24px; font-size: 14px;
+  box-shadow: 0 8px 24px rgba(124,107,242,0.35);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.poetry-restore:hover { filter: brightness(1.06); }
+@media (max-width: 900px) {
+  .poetry-restore { bottom: 12px; font-size: 13px; padding: 9px 18px; }
+}
